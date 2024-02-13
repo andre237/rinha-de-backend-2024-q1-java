@@ -1,5 +1,7 @@
 package com.andre.rinha.spring.entrypoint;
 
+import com.andre.rinha.ClientAccount;
+import com.andre.rinha.features.GenerateBalanceStatementUseCase;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -13,6 +15,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Date;
+
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -24,13 +28,13 @@ public class TransactionsControllerContractTest {
     @Autowired private MockMvc mockMvc;
     @Autowired private ObjectMapper objectMapper;
 
-    @MockBean
-    private MakeTransactionUseCase transactionUseCase;
+    @MockBean private MakeTransactionUseCase transactionUseCase;
+    @MockBean private GenerateBalanceStatementUseCase balanceStatementUseCase;
 
     @Test
     void shouldReturnStatus422_WhenRequestValidationFails() throws Exception {
         final int existingClient = 2;
-        final var request = new TransactionRequestDTO(1000L, "G", "description");
+        final var request = new TransactionRequestDTO(1000L, "G", "description", new Date());
 
         when(transactionUseCase.makeTransaction(any())).thenThrow(InvalidTransactionRequestError.class);
 
@@ -43,7 +47,7 @@ public class TransactionsControllerContractTest {
     @Test
     void shouldReturnStatus404_WhenClientIsNotFound() throws Exception {
         final int notFoundClient = 9;
-        final var request = new TransactionRequestDTO(1000L, "C", "description");
+        final var request = new TransactionRequestDTO(1000L, "C", "description", new Date());
 
         when(transactionUseCase.makeTransaction(any())).thenThrow(UnknownTransactionClientError.class);
 
@@ -56,9 +60,9 @@ public class TransactionsControllerContractTest {
     @Test
     void shouldReturnStatus200_WhenTransactionIsCompleted() throws Exception {
         final int existingClient = 1;
-        final var request = new TransactionRequestDTO(1000L, "G", "description");
+        final var request = new TransactionRequestDTO(1000L, "G", "description", new Date());
 
-        when(transactionUseCase.makeTransaction(any())).thenReturn("Transaction completed");
+        when(transactionUseCase.makeTransaction(any())).thenReturn(new ClientAccount(1, 1000L, 900L));
 
         mockMvc.perform(post("/clientes/{client}/transacoes", existingClient)
                 .contentType("application/json")

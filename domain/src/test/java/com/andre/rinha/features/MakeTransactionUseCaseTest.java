@@ -3,12 +3,17 @@ package com.andre.rinha.features;
 import com.andre.rinha.*;
 import com.andre.rinha.errors.*;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 
+import java.util.Date;
 import java.util.Optional;
 
 import static com.andre.rinha.TransactionRequestType.CREDIT;
@@ -25,6 +30,14 @@ public class MakeTransactionUseCaseTest {
 
     @InjectMocks
     private MakeTransactionUseCase transactionUseCase;
+
+    @BeforeEach
+    void setup() throws TransactionExecutionError {
+        lenient().when(createTransactionIsolation.runIsolated(any(), any())).thenAnswer(invocationOnMock -> {
+            ThrowingSupplier<Object> supplier = invocationOnMock.getArgument(1);
+            return supplier.get();
+        });
+    }
 
     @Test
     void shouldThrowInvalidRequestError_OnInvalidRequests() {
@@ -64,7 +77,7 @@ public class MakeTransactionUseCaseTest {
 
         Assertions.assertThat(updatedAccount).isNotNull();
         verify(registerTransaction, times(1)).register(request, clientAccount);
-        verify(updateAccountBalance, times(1)).update(clientAccount, -20L);
+        verify(updateAccountBalance, times(1)).update(clientAccount, 30L);
     }
 
     private void assertInvalidRequestError(String expectedErrorMessage, TransactionRequest request) {
@@ -74,7 +87,7 @@ public class MakeTransactionUseCaseTest {
     }
 
     private TransactionRequest buildRequest(Long value, TransactionRequestType type, String description) {
-        return new TransactionRequest(1, value, type, description);
+        return new TransactionRequest(1, value, type, description, new Date());
     }
 
 }

@@ -30,9 +30,9 @@ public class ClientAccountRepositoryAdapter implements FetchClientPort, UpdateAc
     }
 
     @Override
-    public Long update(ClientAccount account, Long updateValue) {
-        final String sql = "update client_account set balance = balance + (?) where id = ? returning balance";
-        return jdbcTemplate.queryForObject(sql, Long.class, updateValue, account.id());
+    public void update(ClientAccount account, Long newValue) {
+        final String sql = "update client_account set balance = ? where id = ?";
+        jdbcTemplate.update(sql, newValue, account.id());
     }
 
 }
