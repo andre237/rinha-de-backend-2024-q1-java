@@ -4,3 +4,5 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres?currentSchema=public
     username: postgres
     password: secret
+  jackson:
+    property-naming-strategy: SNAKE_CASE

@@ -32,15 +32,15 @@ public class MakeTransactionUseCase {
             ClientAccount clientAccount = fetchClient.fetchById(request.clientId())
                     .orElseThrow(() -> new UnknownTransactionClientError("client not found"));
 
-            boolean isDebitTransaction = DEBIT.equals(request.type());
-            final Long updateValue = isDebitTransaction ? -request.value() : +request.value();
-
-            registerTransaction.register(request, clientAccount);
-            Long newBalance = updateAccountBalance.update(clientAccount, updateValue);
+            final long updateValue = CREDIT.equals(request.type()) ? +request.value() : -request.value();
+            final long newBalance = clientAccount.balance() + updateValue;
 
             if (newBalance < 0 && Math.abs(newBalance) > clientAccount.limit()) {
                 throw new LimitExceededTransactionError("not enough balance to fullfil transaction");
             }
+
+            registerTransaction.register(request, clientAccount);
+            updateAccountBalance.update(clientAccount, newBalance);
 
             return new ClientAccount(clientAccount.id(), clientAccount.limit(), newBalance);
         });
