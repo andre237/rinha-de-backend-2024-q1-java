@@ -18,7 +18,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class GenerateBalanceStatementUseCaseTest {
+class GenerateBalanceStatementUseCaseTest {
 
     @Mock private FetchClientPort fetchClient;
     @Mock private FetchExecutedTransactionsPort fetchExecutedTransactions;

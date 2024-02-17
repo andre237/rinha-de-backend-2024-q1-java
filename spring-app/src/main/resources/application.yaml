@@ -8,3 +8,8 @@ spring:
     property-naming-strategy: SNAKE_CASE
     deserialization:
       accept-float-as-int: false
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus,metrics,health

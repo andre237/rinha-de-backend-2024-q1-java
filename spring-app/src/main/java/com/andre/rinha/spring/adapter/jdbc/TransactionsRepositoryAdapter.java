@@ -2,12 +2,12 @@ package com.andre.rinha.spring.adapter.jdbc;
 
 import com.andre.rinha.*;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.List;
 
-@Repository
+@Component
 public class TransactionsRepositoryAdapter implements RegisterTransactionPort, FetchExecutedTransactionsPort {
 
     private final JdbcTemplate jdbcTemplate;

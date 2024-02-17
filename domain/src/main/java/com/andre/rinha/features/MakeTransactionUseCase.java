@@ -10,16 +10,13 @@ public class MakeTransactionUseCase {
 
     private static final Integer DESCRIPTION_LENGTH_LIMIT = 10;
 
-    private final FetchClientPort fetchClient;
     private final RegisterTransactionPort registerTransaction;
     private final UpdateAccountBalancePort updateAccountBalance;
     private final CreateTransactionIsolationPort createTransactionIsolation;
 
-    public MakeTransactionUseCase(FetchClientPort fetchClient,
-                                  RegisterTransactionPort registerTransaction,
+    public MakeTransactionUseCase(RegisterTransactionPort registerTransaction,
                                   UpdateAccountBalancePort updateAccountBalance,
                                   CreateTransactionIsolationPort createTransactionIsolation) {
-        this.fetchClient = fetchClient;
         this.registerTransaction = registerTransaction;
         this.updateAccountBalance = updateAccountBalance;
         this.createTransactionIsolation = createTransactionIsolation;
@@ -28,21 +25,26 @@ public class MakeTransactionUseCase {
     public ClientAccount makeTransaction(TransactionRequest request) throws TransactionExecutionError {
         this.validateOrThrow(request);
 
-        return createTransactionIsolation.runIsolated(request.clientId(), () -> {
-            ClientAccount clientAccount = fetchClient.fetchById(request.clientId())
-                    .orElseThrow(() -> new UnknownTransactionClientError("client not found"));
+        return this.createTransactionIsolation.runIsolated(request.clientId(), () -> {
+            try {
+                final Long updateValue = request.type().equals(CREDIT) ? +request.value() : -request.value();
+                var updateResult = updateAccountBalance.update(request.clientId(), updateValue);
 
-            final long updateValue = CREDIT.equals(request.type()) ? +request.value() : -request.value();
-            final long newBalance = clientAccount.balance() + updateValue;
+                BalanceUpdateResult resultCode = updateResult.getKey();
+                ClientAccount resultAccount = updateResult.getValue();
 
-            if (newBalance < 0 && Math.abs(newBalance) > clientAccount.limit()) {
-                throw new LimitExceededTransactionError("not enough balance to fullfil transaction");
+                switch (resultCode) {
+                    case CLIENT_NOT_FOUND -> throw new UnknownTransactionClientError();
+                    case LIMIT_EXCEEDED -> throw new LimitExceededTransactionError();
+                    case COMPLETED -> registerTransaction.register(request, resultAccount);
+                }
+
+                return resultAccount;
+            } catch (TransactionExecutionError knownError) {
+                throw knownError;
+            } catch (Exception unknownError) {
+                throw new UnexpectedTransactionError(unknownError);
             }
-
-            registerTransaction.register(request, clientAccount);
-            updateAccountBalance.update(clientAccount, newBalance);
-
-            return new ClientAccount(clientAccount.id(), clientAccount.limit(), newBalance);
         });
     }
 

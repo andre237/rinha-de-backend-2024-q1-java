@@ -1,6 +1,6 @@
 package com.andre.rinha.errors;
 
-public class TransactionExecutionError extends Exception {
+public class TransactionExecutionError extends RuntimeException {
 
     public TransactionExecutionError(String message) {
         super(message);

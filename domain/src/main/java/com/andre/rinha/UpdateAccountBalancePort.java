@@ -1,7 +1,9 @@
 package com.andre.rinha;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 public interface UpdateAccountBalancePort {
 
-    void update(ClientAccount account, Long newValue);
+    Pair<BalanceUpdateResult, ClientAccount> update(Integer clientId, Long updateValue);
 
 }

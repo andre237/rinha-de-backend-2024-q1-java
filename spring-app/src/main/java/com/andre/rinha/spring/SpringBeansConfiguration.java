@@ -17,9 +17,7 @@ public class SpringBeansConfiguration {
             ClientAccountRepositoryAdapter clientAccountRepository,
             TransactionsRepositoryAdapter transactionRegistrationRepository
     ) {
-        return new MakeTransactionUseCase(
-                clientAccountRepository, transactionRegistrationRepository,
-                clientAccountRepository, transactionIsolation);
+        return new MakeTransactionUseCase(transactionRegistrationRepository, clientAccountRepository, transactionIsolation);
     }
 
     @Bean

@@ -1,10 +1,10 @@
 package com.andre.rinha;
 
-import com.andre.rinha.errors.TransactionExecutionError;
+import java.util.function.Supplier;
 
 public interface CreateTransactionIsolationPort {
 
-    <T> T runIsolated(Integer clientId, ThrowingSupplier<T> supplier) throws TransactionExecutionError;
+    <T> T runIsolated(Integer clientId, Supplier<T> supplier);
 
 
 }
