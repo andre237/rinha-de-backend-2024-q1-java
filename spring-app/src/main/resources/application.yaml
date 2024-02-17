@@ -1,15 +1,10 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/postgres?currentSchema=public
+    url: jdbc:postgresql://${DB_HOSTNAME:localhost}:5432/postgres?currentSchema=public
     username: postgres
     password: secret
   jackson:
     property-naming-strategy: SNAKE_CASE
     deserialization:
       accept-float-as-int: false
-management:
-  endpoints:
-    web:
-      exposure:
-        include: prometheus,metrics,health

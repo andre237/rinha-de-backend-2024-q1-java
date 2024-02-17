@@ -1,8 +1,6 @@
 package com.andre.rinha.spring.adapter.jdbc;
 
-import com.andre.rinha.BalanceUpdateResult;
 import com.andre.rinha.ClientAccount;
-import com.andre.rinha.errors.LimitExceededTransactionError;
 import com.andre.rinha.spring.BasePostgresTestContainerConfig;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
