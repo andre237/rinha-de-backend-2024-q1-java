@@ -21,9 +21,11 @@ public class TransactionsRepositoryAdapter implements RegisterTransactionPort, F
 
     @Override
     public List<TransactionRequest> fetchByClientId(Integer clientId, Integer limit) {
-        try (Connection conn = dataSource.getConnection()) {
-            final String sql = "select * from transaction_requests where account_id = ? order by created_at desc limit ?";
-            PreparedStatement preparedStatement = conn.prepareStatement(sql);
+        final String sql = "select * from transaction_requests where account_id = ? order by created_at desc limit ?";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)
+        ) {
+
             preparedStatement.setInt(1, clientId);
             preparedStatement.setLong(2, limit);
 
@@ -49,17 +51,17 @@ public class TransactionsRepositoryAdapter implements RegisterTransactionPort, F
 
     @Override
     public void register(TransactionRequest transactionRequest, ClientAccount account) {
-        try (Connection conn = dataSource.getConnection()) {
-            final String sql = "insert into transaction_requests(value, type, description, created_at, account_id) VALUES (?,?,?,?,?);";
-            try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
-                preparedStatement.setLong(1, transactionRequest.value());
-                preparedStatement.setString(2, transactionRequest.type().getSymbol());
-                preparedStatement.setString(3, transactionRequest.description());
-                preparedStatement.setDate(4, new java.sql.Date(System.currentTimeMillis()));
-                preparedStatement.setInt(5, transactionRequest.clientId());
+        final String sql = "insert into transaction_requests(value, type, description, created_at, account_id) VALUES (?,?,?,?,?);";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)
+        ) {
+            preparedStatement.setLong(1, transactionRequest.value());
+            preparedStatement.setString(2, transactionRequest.type().getSymbol());
+            preparedStatement.setString(3, transactionRequest.description());
+            preparedStatement.setDate(4, new java.sql.Date(System.currentTimeMillis()));
+            preparedStatement.setInt(5, transactionRequest.clientId());
 
-                preparedStatement.execute();
-            }
+            preparedStatement.execute();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

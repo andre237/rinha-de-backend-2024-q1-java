@@ -24,9 +24,10 @@ public class ClientAccountRepositoryAdapter implements UpdateAccountBalancePort,
 
     @Override
     public Optional<ClientAccount> fetchById(Integer clientId) {
-        try (Connection conn = dataSource.getConnection()) {
-            final String sql = "select * from client_account where id = ?";
-            PreparedStatement preparedStatement = conn.prepareStatement(sql);
+        final String sql = "select * from client_account where id = ?";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)
+        ) {
             preparedStatement.setInt(1, clientId);
 
             try (preparedStatement; ResultSet rs = preparedStatement.executeQuery()) {
@@ -48,13 +49,14 @@ public class ClientAccountRepositoryAdapter implements UpdateAccountBalancePort,
 
     @Override
     public Pair<BalanceUpdateResult, ClientAccount> update(Integer clientId, Long updateValue) {
-        try (Connection conn = dataSource.getConnection()) {
-            final String sql = "update client_account set balance = balance + ? where id = ? returning id, \"limit\", balance;";
-            PreparedStatement preparedStatement = conn.prepareStatement(sql);
+        final String sql = "update client_account set balance = balance + ? where id = ? returning id, \"limit\", balance;";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql)
+        ) {
             preparedStatement.setLong(1, updateValue);
             preparedStatement.setInt(2, clientId);
 
-            try (preparedStatement; ResultSet rs = preparedStatement.executeQuery()) {
+            try (ResultSet rs = preparedStatement.executeQuery()) {
                 if (rs.next()) {
                     int id = rs.getInt(1);
                     long accountLimit = rs.getLong(2);
