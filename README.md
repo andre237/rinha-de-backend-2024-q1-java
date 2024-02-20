@@ -19,6 +19,6 @@ Minha submissão para o desafio da [rinha de backend 2024](https://github.com/za
 <p>Minha decisão por arquitetar dessa forma foi para trabalhar e estudar conceitos de DDD e Arquitetura Hexagonal. 
 Com o domínio bem isolado, posso ter minha aplicação rodando com Spring, Quarkus e até mesmo serverless com AWS Lambda ou algum outro provedor de cloud</p>
 
-<p>Exemplo dessa flexibilidade de implantação da app pode ser vista nos módulos [quarkus-app](https://github.com/andre237/rinha-de-backend-2024-q1-java/tree/multi-framework/quarkus-app) e [serverless-app](https://github.com/andre237/rinha-de-backend-2024-q1-java/tree/multi-framework/serverless-app), 
-onde o mesmo domínio está implementado em dois frameworks diferentes, sem qualquer dependência ou acoplamento</p>
+Exemplo dessa flexibilidade de implantação da app pode ser vista nos módulos [quarkus-app](https://github.com/andre237/rinha-de-backend-2024-q1-java/tree/multi-framework/quarkus-app) e [serverless-app](https://github.com/andre237/rinha-de-backend-2024-q1-java/tree/multi-framework/serverless-app), 
+onde o mesmo domínio está implementado em dois frameworks diferentes, sem qualquer dependência ou acoplamento
 
