@@ -2,6 +2,6 @@ package com.andre.rinha;
 
 public enum BalanceUpdateResult {
 
-    CLIENT_NOT_FOUND, LIMIT_EXCEEDED, COMPLETED
+    INVALID_REQUEST, CLIENT_NOT_FOUND, LIMIT_EXCEEDED, COMPLETED
 
 }

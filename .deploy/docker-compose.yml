@@ -2,7 +2,7 @@ version: "3.5"
 
 services:
   api01: &api
-    image: andre237/api-rinha-spring-sync:0.0.1
+    image: spring-app:0.0.1-SNAPSHOT
     hostname: api01
     environment:
       - DB_HOSTNAME=db

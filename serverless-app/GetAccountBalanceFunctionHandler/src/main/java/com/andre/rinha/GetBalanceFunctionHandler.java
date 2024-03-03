@@ -6,7 +6,6 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.andre.rinha.adapter.DBUtil;
 import com.andre.rinha.adapter.JDBCPostgresAdapter;
-import com.andre.rinha.errors.UnknownTransactionClientError;
 import com.andre.rinha.features.GenerateBalanceStatementUseCase;
 import com.google.gson.Gson;
 
@@ -29,9 +28,9 @@ public class GetBalanceFunctionHandler implements RequestHandler<APIGatewayProxy
 
         try {
             ClientAccountStatement statement = getBalanceUseCase.generateStatement(clientId);
-            return new APIGatewayProxyResponseEvent().withStatusCode(200).withBody(new Gson().toJson(statement));
-        } catch (UnknownTransactionClientError err) {
-            return new APIGatewayProxyResponseEvent().withStatusCode(404);
+            return statement != null ?
+                    new APIGatewayProxyResponseEvent().withStatusCode(200).withBody(new Gson().toJson(statement)) :
+                    new APIGatewayProxyResponseEvent().withStatusCode(404);
         } catch (Exception ex) {
             context.getLogger().log("Internal error: " + ex.getMessage());
             return new APIGatewayProxyResponseEvent().withStatusCode(500);

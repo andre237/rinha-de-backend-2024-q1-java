@@ -6,8 +6,6 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.andre.rinha.adapter.DBUtil;
 import com.andre.rinha.adapter.JDBCPostgresAdapter;
-import com.andre.rinha.errors.LimitExceededTransactionError;
-import com.andre.rinha.errors.UnknownTransactionClientError;
 import com.andre.rinha.features.MakeTransactionUseCase;
 import com.google.gson.Gson;
 
@@ -31,12 +29,14 @@ public class MakeTransactionFunctionHandler implements RequestHandler<APIGateway
         try {
             Gson gson = new Gson();
             TransactionRequest transactionRequest = gson.fromJson(request.getBody(), TransactionRequest.class);
-            ClientAccount clientAccount = makeTransactionUseCase.makeTransaction(transactionRequest);
-            return new APIGatewayProxyResponseEvent().withStatusCode(200).withBody(gson.toJson(clientAccount));
-        } catch (UnknownTransactionClientError err) {
-            return new APIGatewayProxyResponseEvent().withStatusCode(404);
-        } catch (LimitExceededTransactionError err) {
-            return new APIGatewayProxyResponseEvent().withStatusCode(422);
+
+            var makeTransactionResult = makeTransactionUseCase.makeTransaction(transactionRequest);
+
+            return switch (makeTransactionResult.result()) {
+                case INVALID_REQUEST, LIMIT_EXCEEDED -> new APIGatewayProxyResponseEvent().withStatusCode(422);
+                case CLIENT_NOT_FOUND -> new APIGatewayProxyResponseEvent().withStatusCode(404);
+                case COMPLETED -> new APIGatewayProxyResponseEvent().withStatusCode(200).withBody(gson.toJson(makeTransactionResult.account()));
+            };
         } catch (Exception ex) {
             context.getLogger().log("Internal error: " + ex.getMessage());
             return new APIGatewayProxyResponseEvent().withStatusCode(500);
