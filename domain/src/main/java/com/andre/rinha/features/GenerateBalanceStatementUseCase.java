@@ -1,8 +1,6 @@
 package com.andre.rinha.features;
 
 import com.andre.rinha.*;
-import com.andre.rinha.errors.UnknownTransactionClientError;
-
 import java.util.Date;
 
 public class GenerateBalanceStatementUseCase {
@@ -18,13 +16,14 @@ public class GenerateBalanceStatementUseCase {
         this.fetchExecutedTransactions = fetchExecutedTransactions;
     }
 
-    public ClientAccountStatement generateStatement(Integer clientId) throws UnknownTransactionClientError {
-        ClientAccount account = fetchClient.fetchById(clientId).orElseThrow(UnknownTransactionClientError::new);
+    public ClientAccountStatement generateStatement(Integer clientId) {
+        return fetchClient.fetchById(clientId).map(clientAccount ->
+                new ClientAccountStatement(
+                        clientAccount.balance(), clientAccount.limit(), new Date(),
+                        fetchExecutedTransactions.fetchByClientId(clientId, LAST_TRANSACTIONS_LENGTH_LIMIT)
+                )
+        ).orElse(null);
 
-        return new ClientAccountStatement(
-                account.balance(), account.limit(), new Date(),
-                fetchExecutedTransactions.fetchByClientId(clientId, LAST_TRANSACTIONS_LENGTH_LIMIT)
-        );
     }
 
 }

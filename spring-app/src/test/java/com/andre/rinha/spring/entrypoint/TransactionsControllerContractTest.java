@@ -1,12 +1,11 @@
 package com.andre.rinha.spring.entrypoint;
 
 import com.andre.rinha.ClientAccount;
+import com.andre.rinha.MakeTransactionResult;
 import com.andre.rinha.features.GenerateBalanceStatementUseCase;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.andre.rinha.errors.InvalidTransactionRequestError;
-import com.andre.rinha.errors.UnknownTransactionClientError;
 import com.andre.rinha.features.MakeTransactionUseCase;
 
 import org.junit.jupiter.api.Test;
@@ -17,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Date;
 
+import static com.andre.rinha.BalanceUpdateResult.*;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -36,7 +36,7 @@ class TransactionsControllerContractTest {
         final int existingClient = 2;
         final var request = new TransactionRequestDTO(1000L, "G", "description", new Date());
 
-        when(transactionUseCase.makeTransaction(any())).thenThrow(InvalidTransactionRequestError.class);
+        when(transactionUseCase.makeTransaction(any())).thenReturn(new MakeTransactionResult(INVALID_REQUEST, null));
 
         mockMvc.perform(post("/clientes/{client}/transacoes", existingClient)
                 .contentType("application/json")
@@ -49,7 +49,7 @@ class TransactionsControllerContractTest {
         final int notFoundClient = 9;
         final var request = new TransactionRequestDTO(1000L, "C", "description", new Date());
 
-        when(transactionUseCase.makeTransaction(any())).thenThrow(UnknownTransactionClientError.class);
+        when(transactionUseCase.makeTransaction(any())).thenReturn(new MakeTransactionResult(CLIENT_NOT_FOUND, null));
 
         mockMvc.perform(post("/clientes/{client}/transacoes", notFoundClient)
                 .contentType("application/json")
@@ -62,7 +62,7 @@ class TransactionsControllerContractTest {
         final int existingClient = 1;
         final var request = new TransactionRequestDTO(1000L, "G", "description", new Date());
 
-        when(transactionUseCase.makeTransaction(any())).thenReturn(new ClientAccount(1, 1000L, 900L));
+        when(transactionUseCase.makeTransaction(any())).thenReturn(new MakeTransactionResult(COMPLETED, new ClientAccount(1, 1000L, 900L)));
 
         mockMvc.perform(post("/clientes/{client}/transacoes", existingClient)
                 .contentType("application/json")

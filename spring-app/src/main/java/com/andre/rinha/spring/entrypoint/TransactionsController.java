@@ -2,10 +2,10 @@ package com.andre.rinha.spring.entrypoint;
 
 import com.andre.rinha.ClientAccount;
 import com.andre.rinha.ClientAccountStatement;
-import com.andre.rinha.errors.TransactionExecutionError;
-import com.andre.rinha.errors.UnknownTransactionClientError;
+import com.andre.rinha.MakeTransactionResult;
 import com.andre.rinha.features.GenerateBalanceStatementUseCase;
 import com.andre.rinha.features.MakeTransactionUseCase;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,20 +22,27 @@ public class TransactionsController {
     }
 
     @PostMapping("{clientId}/transacoes")
-    public TransactionResponseDTO makeTransaction(
+    public ResponseEntity<TransactionResponseDTO> makeTransaction(
             @PathVariable Integer clientId,
-            @RequestBody TransactionRequestDTO requestDTO
-    ) throws TransactionExecutionError {
-        ClientAccount clientAccount = transactionUseCase.makeTransaction(requestDTO.toDomainRequest(clientId));
-        return new TransactionResponseDTO(clientAccount.limit(), clientAccount.balance());
+            @RequestBody TransactionRequestDTO requestDTO) {
+        MakeTransactionResult makeTransactionResult = transactionUseCase
+                .makeTransaction(requestDTO.toDomainRequest(clientId));
+
+        ClientAccount account = makeTransactionResult.account();
+
+        return switch (makeTransactionResult.result()) {
+            case INVALID_REQUEST, LIMIT_EXCEEDED -> ResponseEntity.unprocessableEntity().build();
+            case CLIENT_NOT_FOUND -> ResponseEntity.notFound().build();
+            case COMPLETED -> ResponseEntity.ok(new TransactionResponseDTO(account.limit(), account.balance()));
+        };
     }
 
     @GetMapping("{clientId}/extrato")
-    public AccountStatementDTO generateStatement(
-            @PathVariable Integer clientId
-    ) throws UnknownTransactionClientError {
+    public ResponseEntity<AccountStatementDTO> generateStatement(@PathVariable Integer clientId) {
         ClientAccountStatement clientAccountStatement = balanceStatementUseCase.generateStatement(clientId);
-        return AccountStatementDTO.fromDomain(clientAccountStatement);
+        return clientAccountStatement != null ?
+                ResponseEntity.ok(AccountStatementDTO.fromDomain(clientAccountStatement)) :
+                ResponseEntity.notFound().build();
     }
 
 }
